@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Práctica 4 · Paso a paso</title>
+<style>
+:root{
+  --paper:#F7F9FC; --grid:#E1E8F2; --ink:#1A2238; --soft:#5B6782; --blue:#1F4E9C; --blue-bg:#E6EEFA;
+  --marker:#FFE680; --marker-ink:#1A2238; --ok:#2E7D4F; --ok-bg:#E3F3E9; --bad:#B3261E; --bad-bg:#FBE6E4;
+  --orange:#C2620A; --orange-bg:#FDEBD8; --card:#FFFFFF; --line:#CBD5E4; --code-bg:#FFFFFF;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --paper:#101828; --grid:#1B2740; --ink:#E6ECF5; --soft:#9AA8C2; --blue:#86AEF2; --blue-bg:#1A2B4D;
+    --marker:#5C4D0A; --marker-ink:#FFF5C2; --ok:#6FCF97; --ok-bg:#163223; --bad:#FF8A80; --bad-bg:#3A1A18;
+    --orange:#F2A65A; --orange-bg:#3A2611; --card:#152039; --line:#2A3A5C; --code-bg:#0F1930;
+    color-scheme: dark;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  font-family:"Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+  color:var(--ink); background-color:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:24px 24px; line-height:1.5; font-size:17px;
+}
+code,.mono{font-family:"Cascadia Mono",Consolas,"Courier New",monospace}
+.wrap{max-width:1240px;margin:0 auto;padding:20px 20px 60px}
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:18px}
+header.top h1{font-size:30px;line-height:1.15;margin:0;font-weight:700;letter-spacing:-0.01em}
+header.top p{margin:4px 0 0;color:var(--soft);font-size:15px}
+nav.steps{display:flex;gap:8px;flex-wrap:wrap}
+nav.steps button{
+  font:inherit;font-size:15px;border:2px solid var(--line);background:var(--card);color:var(--ink);
+  padding:8px 14px;border-radius:999px;cursor:pointer;display:flex;align-items:center;gap:8px
+}
+nav.steps button .n{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--blue-bg);color:var(--blue);font-weight:700;font-size:13px}
+nav.steps button[aria-selected="true"]{border-color:var(--blue);background:var(--blue);color:var(--card)}
+nav.steps button[aria-selected="true"] .n{background:var(--card);color:var(--blue)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+section.panel{display:none}
+section.panel.active{display:block}
+.intro{display:grid;grid-template-columns:1.3fr 1fr;gap:18px;margin-bottom:16px}
+.box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+.box h2{margin:0 0 6px;font-size:22px}
+.box h3{margin:0 0 8px;font-size:17px}
+.box p{margin:6px 0}
+.rule{font-size:19px;background:var(--blue-bg);border-left:5px solid var(--blue);padding:10px 14px;border-radius:0 8px 8px 0;margin:10px 0}
+.controls{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:6px 0 10px}
+.btn{font:inherit;font-size:15px;padding:8px 14px;border-radius:8px;border:2px solid var(--blue);background:var(--card);color:var(--blue);cursor:pointer;font-weight:600}
+.btn.primary{background:var(--blue);color:var(--card)}
+.btn:disabled{opacity:.4;cursor:default}
+.counter{color:var(--soft);font-size:14px;margin-left:4px}
+label.field{display:flex;align-items:center;gap:6px;font-size:15px;color:var(--soft)}
+input[type=text],input[type=number],select{font:inherit;font-size:16px;padding:6px 10px;border-radius:8px;border:2px solid var(--line);background:var(--card);color:var(--ink)}
+.explain{background:var(--marker);color:var(--marker-ink);border-radius:10px;padding:12px 16px;font-size:19px;min-height:58px;margin-bottom:14px}
+.lab{display:grid;grid-template-columns:1.15fr 1fr;gap:16px;align-items:start}
+.code{font-family:"Cascadia Mono",Consolas,"Courier New",monospace;background:var(--code-bg);border:1px solid var(--line);border-radius:10px;padding:10px 0;font-size:14.5px;overflow:auto}
+.code .ln{display:flex;white-space:pre;padding:1px 12px 1px 0;border-left:4px solid transparent}
+.code .ln .no{display:inline-block;width:34px;text-align:right;color:var(--soft);opacity:.6;margin-right:12px;flex:none;user-select:none}
+.code .ln.cur{background:var(--marker);color:var(--marker-ink);border-left-color:var(--orange)}
+.code .ln.fn{background:var(--blue-bg)}
+.vars{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.var{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:4px 10px;font-size:15px}
+.var b{font-family:"Cascadia Mono",Consolas,monospace;font-weight:600}
+.var.changed{border-color:var(--orange);box-shadow:0 0 0 2px var(--orange-bg)}
+.console{background:#0E1424;color:#D7E3FF;border-radius:10px;padding:10px 14px;font-family:"Cascadia Mono",Consolas,monospace;font-size:14.5px;min-height:64px;white-space:pre-wrap}
+.console .lbl{color:#7F8DB0;font-size:12px;display:block;margin-bottom:4px;font-family:"Segoe UI",system-ui,sans-serif}
+.tag{display:inline-block;padding:1px 8px;border-radius:6px;font-weight:700;font-family:"Cascadia Mono",Consolas,monospace}
+.t-true{background:var(--ok-bg);color:var(--ok)} .t-false{background:var(--bad-bg);color:var(--bad)}
+/* Ej3 */
+.chips{display:flex;flex-wrap:wrap;align-items:center;gap:0;margin:8px 0 4px}
+.chip{min-width:74px;text-align:center;border:2px solid var(--line);border-radius:10px;background:var(--card);padding:6px 8px}
+.chip .num{font-family:"Cascadia Mono",Consolas,monospace;font-size:24px;font-weight:700}
+.chip .sum{font-size:14px;color:var(--soft);min-height:21px}
+.chip.cur{border-color:var(--orange);background:var(--orange-bg)}
+.chip.end{opacity:.55;border-style:dashed}
+.link{width:38px;text-align:center;font-weight:700;font-size:20px;color:var(--soft)}
+.link.ok{color:var(--ok)} .link.bad{color:var(--bad)}
+.flag{display:flex;align-items:center;gap:10px;font-size:18px;margin-top:10px}
+.digits{font-family:"Cascadia Mono",Consolas,monospace;font-size:20px;margin-top:10px;min-height:30px}
+.blackbox{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:8px}
+.bb{border:2px solid var(--ink);border-radius:10px;padding:10px 14px;background:var(--ink);color:var(--paper);font-family:"Cascadia Mono",Consolas,monospace;font-weight:700}
+.bbio{font-family:"Cascadia Mono",Consolas,monospace;font-size:22px;font-weight:700;min-width:50px;text-align:center}
+.arrow{font-size:22px;color:var(--soft)}
+/* Ej2 */
+.tiles{display:flex;flex-wrap:wrap;gap:3px;margin:6px 0}
+.tile{width:26px;height:30px;display:grid;place-items:center;font-family:"Cascadia Mono",Consolas,monospace;font-weight:700;font-size:16px;border-radius:5px;background:var(--blue-bg);color:var(--blue)}
+.tile.j{background:var(--marker);color:var(--marker-ink)}
+.tile.inv{background:var(--orange-bg);color:var(--orange)}
+.tile.sw{outline:2px solid var(--bad);outline-offset:-2px}
+.tile.dim{opacity:.35}
+.rowlbl{font-size:13px;color:var(--soft);margin-top:6px}
+canvas{width:100%;height:auto;border:1px solid var(--line);border-radius:10px;background:var(--card);display:block}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:14px;color:var(--soft);margin:8px 0}
+.legend span::before{content:"";display:inline-block;width:14px;height:6px;border-radius:3px;margin-right:6px;vertical-align:middle;background:var(--c)}
+.paperlab{display:grid;grid-template-columns:1.25fr 1fr;gap:18px;align-items:start}
+.pcap{margin-top:10px;font-size:18px;background:var(--marker);color:var(--marker-ink);border-radius:8px;padding:8px 12px;min-height:44px}
+.ptext{font-size:15.5px}
+.ptext ol,.ptext ul{margin:0 0 8px 18px;padding:0}
+.ptext li{margin:4px 0;padding:2px 6px;border-radius:6px}
+.ptext li.on{background:var(--marker);color:var(--marker-ink)}
+@media (max-width:900px){.paperlab{grid-template-columns:1fr}}
+/* Ej1 */
+table.t{border-collapse:collapse;width:100%;font-size:14.5px;background:var(--card)}
+table.t th,table.t td{border:1px solid var(--line);padding:4px 8px;text-align:right;font-family:"Cascadia Mono",Consolas,monospace}
+table.t th{position:sticky;top:0;background:var(--ink);color:var(--paper);font-family:"Segoe UI",system-ui,sans-serif;font-weight:600;text-align:center}
+table.t tr.cur td{background:var(--marker);color:var(--marker-ink)}
+table.t tr.stop td{background:var(--bad-bg);color:var(--bad)}
+.formula{font-family:"Cascadia Mono",Consolas,monospace;font-size:17px;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 12px;margin:8px 0;overflow:auto}
+.tablewrap{max-height:300px;overflow:auto;border-radius:8px;border:1px solid var(--line)}
+details{margin-top:14px}
+details summary{cursor:pointer;font-weight:600;color:var(--blue);font-size:16px}
+.small{font-size:14px;color:var(--soft)}
+.hook{display:flex;gap:14px;align-items:center}
+@media (max-width:900px){.intro,.lab{grid-template-columns:1fr} header.top h1{font-size:24px}}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div>
+    <h1>Práctica 4, paso a paso</h1>
+    <p>Fundamentos de Informática. Usen ← y → del teclado para avanzar.</p>
+  </div>
+  <nav class="steps" role="tablist" aria-label="Ejercicios en el orden de la clase">
+    <button role="tab" aria-selected="true" data-tab="ej3"><span class="n">1</span>Secuencia enlazada</button>
+    <button role="tab" aria-selected="false" data-tab="ej2"><span class="n">2</span>Curva del dragón</button>
+    <button role="tab" aria-selected="false" data-tab="ej1"><span class="n">3</span>Coseno con Taylor</button>
+  </nav>
+</header>
+
+<!-- ===================== EJ 3 ===================== -->
+<section class="panel active" id="ej3">
+  <div class="intro">
+    <div class="box">
+      <h2>Ejercicio 3: secuencia de números enlazados</h2>
+      <p>Leemos números hasta el <b>0</b>. La secuencia está enlazada si <b>todos tienen la misma suma de cifras</b> que el anterior.</p>
+      <div class="rule">123 → 1+2+3 = 6 &nbsp; 51 → 5+1 = 6 &nbsp; ¡enlazados!</div>
+      <p class="small">El 0 no se procesa: solo avisa de que terminamos (centinela).</p>
+    </div>
+    <div class="box">
+      <h3>Una función es una caja negra</h3>
+      <p class="small">Le damos un número, nos devuelve su suma de cifras.</p>
+      <div class="blackbox">
+        <input type="number" id="bbIn" value="123" min="0" aria-label="Número para sumaDigitos" style="width:110px">
+        <span class="arrow">→</span>
+        <span class="bb">sumaDigitos( )</span>
+        <span class="arrow">→</span>
+        <span class="bbio" id="bbOut">6</span>
+      </div>
+      <div class="digits" id="bbTrace"></div>
+    </div>
+  </div>
+  <div class="controls">
+    <label class="field">Secuencia <input type="text" id="seq3" value="123 51 34 60 0" style="width:220px"></label>
+    <button class="btn" data-ex="123 51 222 60 0">Ejemplo enlazada</button>
+    <button class="btn" data-ex="123 51 34 60 0">Ejemplo NO enlazada</button>
+  </div>
+  <div class="controls">
+    <button class="btn" id="p3">← Anterior</button>
+    <button class="btn primary" id="n3">Siguiente →</button>
+    <button class="btn" id="r3">Reiniciar</button>
+    <span class="counter" id="c3"></span>
+  </div>
+  <div class="explain" id="e3" aria-live="polite"></div>
+  <div class="lab">
+    <div class="box">
+      <h3>Lo que va pasando</h3>
+      <div class="chips" id="chips3"></div>
+      <div class="small"><b style="color:var(--ok)">=</b> coincide con el anterior &nbsp; <b style="color:var(--bad)">≠</b> no coincide: se rompe la cadena</div>
+      <div class="digits" id="dig3"></div>
+      <div class="flag">enlazada = <span id="flag3" class="tag t-true">true</span></div>
+    </div>
+    <div>
+      <div class="code" id="code3"></div>
+      <div class="vars" id="vars3"></div>
+      <div class="console"><span class="lbl">Pantalla</span><span id="out3"></span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== EJ 2 ===================== -->
+<section class="panel" id="ej2">
+  <div class="intro">
+    <div class="box">
+      <h2>Ejercicio 2: curvas del dragón</h2>
+      <p>F = avanzar, L = girar a la izquierda, R = girar a la derecha. Empezamos con <b>F</b> y en cada paso:</p>
+      <div class="rule">nueva = cadena + <b>L</b> + (cadena al revés, cambiando L↔R)</div>
+      <p class="small">Doblen una tira de papel por la mitad 3 veces y despliéguenla a 90°: sale la curva de orden 3.</p>
+    </div>
+    <div class="box">
+      <h3>Invertir = dos cosas a la vez</h3>
+      <p>1. Leer la cadena <b>desde el final</b>.</p>
+      <p>2. Cambiar <b>L por R</b> y <b>R por L</b>. La F no cambia.</p>
+      <p class="mono" style="font-size:18px;margin-top:10px">FLF → FRF &nbsp;&nbsp; FLFLFRF → FLFRFRF</p>
+    </div>
+  </div>
+  <div class="box paper" style="margin-bottom:14px">
+    <h3>Video: la curva con una tira de papel</h3>
+    <div class="paperlab">
+      <div>
+        <canvas id="pcv" width="720" height="380" aria-label="Animación de una tira de papel doblándose y desdoblándose"></canvas>
+        <div class="controls" style="margin:10px 0 0">
+          <button class="btn primary" id="pplay">▶ Reproducir</button>
+          <button class="btn" id="pprev">⏮ Etapa anterior</button>
+          <button class="btn" id="pnext">Etapa siguiente ⏭</button>
+          <button class="btn" id="preset">Reiniciar</button>
+          <label class="field">Dobleces <select id="pord"><option>1</option><option>2</option><option selected>3</option><option>4</option></select></label>
+        </div>
+        <input type="range" id="pbar" min="0" max="1000" value="0" aria-label="Avance del video" style="width:100%;margin-top:10px">
+        <div class="pcap" id="pcap" aria-live="polite"></div>
+      </div>
+      <div class="ptext">
+        <ol id="psteps">
+          <li data-st="0">Corta una hoja A4 <b>a lo largo</b>, en una tira de 2 o 3 cm de ancho. Marca un extremo con un punto: es el <b>inicio</b>.</li>
+          <li data-st="1">Dobla la tira por la mitad, llevando el extremo derecho sobre el izquierdo.</li>
+          <li data-st="2">Sin desdoblar, dobla otra vez por la mitad <b>hacia el mismo lado</b>.</li>
+          <li data-st="3">Hazlo una tercera vez.</li>
+          <li data-st="4">Desdobla y abre <b>cada pliegue en ángulo recto</b>. Apóyala de canto en la mesa o plana sobre un folio.</li>
+        </ol>
+        <p id="presult">Aparece la curva: <b>8 tramos rectos</b> (las 8 F) y <b>7 pliegues</b>. Recorriéndola desde el punto, los giros salen <b class="mono">L L R L L R R</b>, exactamente las letras de <span class="mono">FLFLFRFLFLFRFRF</span> si quitas las F.</p>
+        <p><b>La tira explica la fórmula por sí sola:</b></p>
+        <ul>
+          <li>El <b>pliegue del centro</b> (en amarillo) es el primero que hiciste: es la <b>L del medio</b>.</li>
+          <li>Las dos mitades son la misma curva, pero la segunda se recorre "de vuelta".</li>
+          <li>Si lees la tira desde el otro extremo, los giros salen al revés y cambiados (<span class="mono" id="prev2">L L R R L R R</span>). Eso es justo lo que hace la parte de "invertir" del programa.</li>
+        </ul>
+        <p class="small"><b>Dos consejos:</b> llévala preparada y doblada una vez antes de clase, para que los pliegues se marquen bien. Si te sale R donde esperabas L, dale la vuelta a la tira: es la misma curva vista desde el otro lado.</p>
+      </div>
+    </div>
+  </div>
+  <div class="controls">
+    <label class="field">Orden <select id="ord2"></select></label>
+    <button class="btn" id="p2">← Anterior</button>
+    <button class="btn primary" id="n2">Siguiente →</button>
+    <button class="btn" id="r2">Reiniciar</button>
+    <span class="counter" id="c2"></span>
+  </div>
+  <div class="explain" id="e2" aria-live="polite"></div>
+  <div class="lab">
+    <div class="box">
+      <div id="vis2"></div>
+      <canvas id="cv2" width="640" height="420" aria-label="Dibujo de la curva actual"></canvas>
+      <div class="legend"><span style="--c:var(--blue)">cadena anterior</span><span style="--c:#E0B400">la L del medio</span><span style="--c:var(--orange)">invertida</span></div>
+      <button class="btn" id="anim2">Dibujar trazo a trazo</button>
+    </div>
+    <div>
+      <div class="code" id="code2"></div>
+      <div class="vars" id="vars2"></div>
+      <div class="console"><span class="lbl">Pantalla</span><span id="out2"></span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== EJ 1 ===================== -->
+<section class="panel" id="ej1">
+  <div class="intro">
+    <div class="box">
+      <h2>Ejercicio 1: coseno con la serie de Taylor</h2>
+      <p>cos x = 1 − x²/2! + x⁴/4! − x⁶/6! + … Sumamos términos <b>hasta que el siguiente sea más pequeño que la precisión</b>.</p>
+      <div class="rule">término nuevo = término anterior × (−x²) / ((2n−1)·(2n))</div>
+      <p class="small">Es el mismo esquema que eˣ en la diapositiva 16 de teoría: cada término sale del anterior.</p>
+    </div>
+    <div class="box">
+      <h3>¿Por qué no usar el factorial directamente?</h3>
+      <p>Porque los factoriales crecen tanto que <b>no caben en un long</b>: 21! ya se desborda y el programa da NaN.</p>
+      <details><summary>Ver qué le pasa al factorial en Java</summary><div class="tablewrap" style="max-height:220px;margin-top:8px"><table class="t" id="fact1"></table></div></details>
+    </div>
+  </div>
+  <div class="controls">
+    <label class="field">x (radianes) <input type="number" id="x1" value="1" step="0.1" style="width:100px"></label>
+    <label class="field">Precisión <select id="eps1"><option value="1e-15">1E-15</option><option value="1e-6">1E-6</option><option value="1e-3">1E-3</option></select></label>
+  </div>
+  <div class="controls">
+    <button class="btn" id="p1">← Anterior</button>
+    <button class="btn primary" id="n1">Siguiente →</button>
+    <button class="btn" id="r1">Reiniciar</button>
+    <button class="btn" id="end1">Ir al final</button>
+    <span class="counter" id="c1"></span>
+  </div>
+  <div class="explain" id="e1" aria-live="polite"></div>
+  <div class="lab">
+    <div class="box">
+      <div class="formula" id="form1"></div>
+      <div class="tablewrap"><table class="t" id="tab1"></table></div>
+      <h3 style="margin-top:12px">La suma se acerca a cos(x)</h3>
+      <svg id="svg1" viewBox="0 0 600 220" width="100%" role="img" aria-label="Gráfica de la suma acumulada"></svg>
+    </div>
+    <div>
+      <div class="code" id="code1"></div>
+      <div class="vars" id="vars1"></div>
+      <div class="console"><span class="lbl">Pantalla</span><span id="out1"></span></div>
+    </div>
+  </div>
+</section>
+</div>
+
+<script>
+// ---------- utilidades ----------
+const $ = id => document.getElementById(id);
+function jfmt(v){ // formato parecido a Double.toString de Java
+  if (Number.isNaN(v)) return "NaN";
+  if (Object.is(v,-0)) return "-0.0";
+  if (Number.isInteger(v) && Math.abs(v) < 1e7) return v.toFixed(1);
+  const a = Math.abs(v);
+  if (a !== 0 && (a < 1e-3 || a >= 1e7)) {
+    let [m,e] = v.toExponential().split("e");
+    if (!m.includes(".")) m += ".0";
+    return m + "E" + (e.startsWith("+") ? e.slice(1) : e);
+  }
+  return String(v);
+}
+function short(v){ const a=Math.abs(v); if(a!==0 && (a<1e-4||a>=1e6)) return v.toExponential(3).replace("e","E").replace("E+","E"); return (+v.toFixed(8)).toString(); }
+function renderCode(el, lines){ el.innerHTML = lines.map((l,i)=>`<div class="ln" data-i="${i}"><span class="no">${i+1}</span><span>${l.replace(/&/g,"&amp;").replace(/</g,"&lt;")}</span></div>`).join(""); }
+function hlCode(el, cur, fnRange){ el.querySelectorAll(".ln").forEach(d=>{ const i=+d.dataset.i; d.classList.toggle("cur", i===cur); d.classList.toggle("fn", !!fnRange && i>=fnRange[0] && i<=fnRange[1] && i!==cur); });
+  const c = el.querySelector(".ln.cur"); if (c) { const top=c.offsetTop-el.offsetTop; if (top<el.scrollTop || top>el.scrollTop+el.clientHeight-30) el.scrollTop = top-60; } }
+function renderVars(el, vars, prev){ el.innerHTML = Object.entries(vars).map(([k,v])=>{ const ch = prev && prev[k]!==undefined && prev[k]!==v || (prev && prev[k]===undefined);
+  return `<span class="var${ch?" changed":""}">${k} = <b>${v}</b></span>`; }).join(""); }
+function makeStepper(cfg){ // cfg: build(), show(i), ids
+  let steps=[], i=0;
+  const go = k => { i=Math.max(0,Math.min(steps.length-1,k)); cfg.show(steps, i); $(cfg.c).textContent = `Paso ${i+1} de ${steps.length}`; $(cfg.p).disabled = i===0; $(cfg.n).disabled = i===steps.length-1; };
+  const reset = () => { steps = cfg.build(); go(0); };
+  $(cfg.p).onclick=()=>go(i-1); $(cfg.n).onclick=()=>go(i+1); $(cfg.r).onclick=reset;
+  return {reset, go, next:()=>go(i+1), prev:()=>go(i-1), end:()=>go(steps.length-1)};
+}
+
+// ---------- pestañas ----------
+let active = "ej3"; const steppers = {};
+document.querySelectorAll("nav.steps button").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll("nav.steps button").forEach(x=>x.setAttribute("aria-selected", x===b));
+  document.querySelectorAll("section.panel").forEach(p=>p.classList.toggle("active", p.id===b.dataset.tab));
+  active = b.dataset.tab; if (active==="ej2") drawCurve(curCadena2, true);
+});
+document.addEventListener("keydown", e=>{
+  if (["INPUT","SELECT","TEXTAREA"].includes(document.activeElement.tagName)) return;
+  if (e.key==="ArrowRight") steppers[active].next();
+  if (e.key==="ArrowLeft") steppers[active].prev();
+});
+
+// =================== EJ 3 ===================
+const code3 = [
+"public static int sumaDigitos(int numero) {",
+"    int suma = 0;",
+"    while (numero > 0) {",
+"        suma = suma + numero % 10;",
+"        numero = numero / 10;",
+"    }",
+"    return suma;",
+"}",
+"",
+"// en el main:",
+"boolean enlazada = true;",
+"int anterior = -1;",
+"int num = sc.nextInt();",
+"while (num != 0) {",
+"    int actual = sumaDigitos(num);",
+"    if (anterior != -1 && actual != anterior) {",
+"        enlazada = false;",
+"    }",
+"    anterior = actual;",
+"    num = sc.nextInt();",
+"}",
+"if (enlazada) System.out.println(\"La secuencia está enlazada.\");",
+"else System.out.println(\"La secuencia NO está enlazada.\");"];
+renderCode($("code3"), code3);
+const sumaDig = n => { let s=0; while(n>0){ s+=n%10; n=Math.floor(n/10);} return s; };
+const digitStr = n => String(n).split("").join(" + ") + " = " + sumaDig(n);
+function bbUpdate(){ const v = Math.max(0, parseInt($("bbIn").value)||0); $("bbOut").textContent = sumaDig(v);
+  let n=v, s=0, rows=[]; while(n>0){ rows.push(`${n} % 10 = ${n%10}`); s+=n%10; n=Math.floor(n/10); }
+  $("bbTrace").textContent = v>0 ? digitStr(v) : "0 → no entra al while → 0"; }
+$("bbIn").oninput = bbUpdate; bbUpdate();
+
+function parseSeq(){ const a = $("seq3").value.trim().split(/\s+/).map(x=>parseInt(x)).filter(x=>!isNaN(x)&&x>=0);
+  const k=a.indexOf(0); return k===-1 ? a.concat([0]) : a.slice(0,k+1); }
+function build3(){
+  const seq = parseSeq(); const S=[]; let enl=true, ant=-1, idx=0, out="", actual="—";
+  let sums={}, links={};
+  S.push({line:10, msg:"Empezamos suponiendo que la secuencia SÍ está enlazada. Si algo falla, lo cambiaremos a false.", vars:{enlazada:true}, enl:true, idx:-1, out:"", sums:{}, links:{}, dig:""});
+  S.push({line:11, msg:"anterior = -1 significa \"todavía no he visto ningún número\". Ninguna suma de cifras es negativa.", vars:{enlazada:true, anterior:-1}, enl:true, idx:-1, out:"", sums:{}, links:{}, dig:""});
+  let num = seq[0];
+  S.push({line:12, msg:`Leemos el primer número ANTES del bucle: ${num}.`, vars:{enlazada:enl, anterior:ant, num}, enl, idx:0, out, sums:{...sums}, links:{...links}, dig:""});
+  for (idx=0; ; ){
+    num = seq[idx];
+    if (num===0){ S.push({line:13, msg:"num vale 0: es el centinela. NO se procesa, salimos del while.", vars:{enlazada:enl, anterior:ant, num, actual}, enl, idx, out, sums:{...sums}, links:{...links}, dig:"", end:true}); break; }
+    S.push({line:13, msg:`¿num != 0? ${num} no es 0, así que entramos en el bucle.`, vars:{enlazada:enl, anterior:ant, num, actual}, enl, idx, out, sums:{...sums}, links:{...links}, dig:""});
+    actual = sumaDig(num); sums[idx]=actual;
+    S.push({line:14, fn:[0,7], msg:`Llamamos a la función: sumaDigitos(${num}) devuelve ${actual}. Dentro usa % 10 y / 10, como en la práctica 2.`, vars:{enlazada:enl, anterior:ant, num, actual}, enl, idx, out, sums:{...sums}, links:{...links}, dig:`sumaDigitos(${num}):  ${digitStr(num)}`});
+    let m;
+    if (ant===-1) m = "anterior es -1: es el primer número, no hay con quién comparar.";
+    else if (actual!==ant) m = `¿Coincide? actual = ${actual} y anterior = ${ant}: NO coincide. ¡Se rompe la cadena!`;
+    else m = `¿Coincide? actual = ${actual} y anterior = ${ant}: SÍ coincide. La cadena sigue.`;
+    if (ant!==-1) links[idx] = actual===ant ? "ok":"bad";
+    S.push({line:15, msg:m, vars:{enlazada:enl, anterior:ant, num, actual}, enl, idx, out, sums:{...sums}, links:{...links}, dig:""});
+    if (ant!==-1 && actual!==ant){ enl=false; S.push({line:16, msg:"enlazada pasa a false. Ya no volverá a true aunque los siguientes coincidan.", vars:{enlazada:enl, anterior:ant, num, actual}, enl, idx, out, sums:{...sums}, links:{...links}, dig:""}); }
+    ant = actual;
+    S.push({line:18, msg:`anterior = ${actual}. El número de ahora será el "anterior" del siguiente.`, vars:{enlazada:enl, anterior:ant, num, actual}, enl, idx, out, sums:{...sums}, links:{...links}, dig:""});
+    idx++;
+    S.push({line:19, msg:`Leemos el siguiente número al FINAL de la vuelta: ${seq[idx]}.`, vars:{enlazada:enl, anterior:ant, num:seq[idx], actual}, enl, idx, out, sums:{...sums}, links:{...links}, dig:""});
+  }
+  out = enl ? "La secuencia está enlazada." : "La secuencia NO está enlazada.";
+  S.push({line: enl?21:22, msg: enl ? "enlazada sigue en true: todas las sumas coincidían." : "enlazada es false: alguna pareja no coincidía.", vars:{enlazada:enl, anterior:ant, num:0, actual}, enl, idx, out, sums:{...sums}, links:{...links}, dig:"", end:true});
+  S.seq = seq; return S;
+}
+let prev3=null;
+function show3(S,i){ const s=S[i];
+  $("e3").textContent = s.msg; hlCode($("code3"), s.line, s.fn);
+  renderVars($("vars3"), s.vars, i>0?S[i-1].vars:null); $("out3").textContent = s.out;
+  $("flag3").textContent = s.enl; $("flag3").className = "tag " + (s.enl ? "t-true":"t-false");
+  $("dig3").textContent = s.dig;
+  const seq = S.seq; let h="";
+  seq.forEach((n,k)=>{ if (k>0){ const l=s.links[k]; h += `<span class="link ${l||""}" title="${l==="ok"?"coincide":l==="bad"?"no coincide":""}">${l==="ok"?"=":l==="bad"?"≠":""}</span>`; }
+    const isEnd = n===0; const cur = k===s.idx;
+    h += `<div class="chip${cur?" cur":""}${isEnd?" end":""}"><div class="num">${n}</div><div class="sum">${isEnd?"fin":(s.sums[k]!==undefined?"suma "+s.sums[k]:"")}</div></div>`; });
+  $("chips3").innerHTML = h; }
+steppers.ej3 = makeStepper({build:build3, show:show3, p:"p3", n:"n3", r:"r3", c:"c3"});
+document.querySelectorAll("[data-ex]").forEach(b=>b.onclick=()=>{ $("seq3").value=b.dataset.ex; steppers.ej3.reset(); });
+$("seq3").onchange = ()=>steppers.ej3.reset();
+steppers.ej3.reset();
+
+// =================== EJ 2 ===================
+const code2 = [
+"String cadena = \"F\";",
+"for (int i = 0; i < orden; i++) {",
+"    String invertida = \"\";",
+"    for (int j = cadena.length() - 1; j >= 0; j--) {",
+"        char c = cadena.charAt(j);",
+"        if (c == 'F') invertida = invertida + \"F\";",
+"        else if (c == 'L') invertida = invertida + \"R\";",
+"        else invertida = invertida + \"L\";",
+"    }",
+"    cadena = cadena + \"L\" + invertida;",
+"}",
+"System.out.println(\"Curva del dragón de orden \" + orden + \": \" + cadena);"];
+renderCode($("code2"), code2);
+const sel2 = $("ord2"); for (let k=0;k<=10;k++){ const o=document.createElement("option"); o.value=k; o.textContent=k; if(k===3) o.selected=true; sel2.appendChild(o); }
+const invert = s => s.split("").reverse().map(c=>c==="L"?"R":c==="R"?"L":c).join("");
+let curCadena2 = {s:"F", split:null};
+function build2(){
+  const orden = +sel2.value; const S=[]; let cad="F";
+  S.push({line:0, msg:"La curva de orden 0 es simplemente \"F\": avanzar una unidad.", vars:{orden, cadena:'"F"'}, mode:"cad", cad, out:""});
+  for (let i=0;i<orden;i++){
+    S.push({line:1, msg:`Vuelta i = ${i}: vamos a pasar de la curva de orden ${i} a la de orden ${i+1}.`, vars:{orden, i, cadena:q(cad)}, mode:"cad", cad, out:""});
+    S.push({line:2, msg:"invertida empieza vacía EN CADA VUELTA. Por eso se declara dentro del for.", vars:{orden, i, cadena:q(cad), invertida:'""'}, mode:"cad", cad, out:""});
+    const inv = invert(cad);
+    S.push({line:5, msg:`Recorremos "${trunc(cad)}" desde el final, cambiando L↔R. Las letras con borde rojo son las que cambian.`, vars:{orden, i, cadena:q(cad), invertida:q(inv)}, mode:"inv", cad, inv, out:""});
+    const nueva = cad + "L" + inv;
+    S.push({line:9, msg:`cadena = "${trunc(cad)}" + "L" + "${trunc(inv)}". Ya tenemos la curva de orden ${i+1} (${nueva.length} letras).`, vars:{orden, i, cadena:q(nueva)}, mode:"join", cad:nueva, split:[cad.length, inv.length], out:""});
+    cad = nueva;
+  }
+  S.push({line:11, msg:`Fin del for: escribimos la curva de orden ${orden}.`, vars:{orden, cadena:q(cad)}, mode:"cad", cad, out:`Curva del dragón de orden ${orden}: ${cad}`});
+  return S;
+}
+const trunc = s => s.length>23 ? s.slice(0,10)+"…"+s.slice(-10) : s;
+const q = s => '"'+trunc(s)+'"';
+function tilesHTML(s, cls){ const MAX=127; if (s.length>MAX) return `<div class="small">(${s.length} letras: demasiadas para mostrarlas todas)</div>`;
+  return `<div class="tiles">${s.split("").map((c,k)=>`<span class="tile ${typeof cls==="function"?cls(k,c):cls||""}">${c}</span>`).join("")}</div>`; }
+function show2(S,i){ const s=S[i];
+  $("e2").textContent = s.msg; hlCode($("code2"), s.line);
+  renderVars($("vars2"), s.vars, i>0?S[i-1].vars:null); $("out2").textContent = s.out;
+  let h="";
+  if (s.mode==="inv"){
+    const rev = s.cad.split("").reverse().join("");
+    h += `<div class="rowlbl">cadena leída desde el final</div>` + tilesHTML(rev, "");
+    h += `<div class="rowlbl">invertida (cambiando L↔R)</div>` + tilesHTML(s.inv, (k,c)=> "inv" + (rev[k]!==c ? " sw":""));
+    curCadena2 = {s:s.cad, split:null};
+  } else if (s.mode==="join"){
+    const [a,b] = s.split;
+    h += `<div class="rowlbl">cadena anterior + L + invertida</div>` + tilesHTML(s.cad, k=> k<a ? "" : k===a ? "j" : "inv");
+    curCadena2 = {s:s.cad, split:s.split};
+  } else {
+    h += `<div class="rowlbl">cadena</div>` + tilesHTML(s.cad, "");
+    curCadena2 = {s:s.cad, split:null};
+  }
+  $("vis2").innerHTML = h; drawCurve(curCadena2, true);
+}
+function cssv(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+let animId=null;
+function drawCurve(obj, full, upto){
+  const cv=$("cv2"), ctx=cv.getContext("2d"); const s=obj.s;
+  let x=0,y=0,dx=1,dy=0; const pts=[[0,0]]; const segIdx=[];
+  for (let k=0;k<s.length;k++){ const c=s[k];
+    if (c==="F"){ x+=dx; y+=dy; pts.push([x,y]); segIdx.push(k); }
+    else if (c==="L"){ [dx,dy]=[dy,-dx]; } else if (c==="R"){ [dx,dy]=[-dy,dx]; } }
+  const xs=pts.map(p=>p[0]), ys=pts.map(p=>p[1]);
+  const minX=Math.min(...xs), maxX=Math.max(...xs), minY=Math.min(...ys), maxY=Math.max(...ys);
+  const W=cv.width, H=cv.height, pad=30; const sc=Math.min((W-2*pad)/Math.max(1,maxX-minX),(H-2*pad)/Math.max(1,maxY-minY), 120);
+  const ox = pad + ((W-2*pad) - sc*(maxX-minX))/2 - sc*minX, oy = pad + ((H-2*pad) - sc*(maxY-minY))/2 - sc*minY;
+  ctx.clearRect(0,0,W,H);
+  ctx.strokeStyle=cssv("--grid"); ctx.lineWidth=1;
+  if (sc>=12){ for (let gx=minX-1; gx<=maxX+1; gx++){ ctx.beginPath(); ctx.moveTo(ox+gx*sc,0); ctx.lineTo(ox+gx*sc,H); ctx.stroke(); }
+    for (let gy=minY-1; gy<=maxY+1; gy++){ ctx.beginPath(); ctx.moveTo(0,oy+gy*sc); ctx.lineTo(W,oy+gy*sc); ctx.stroke(); } }
+  const n = full ? pts.length-1 : upto;
+  const blue=cssv("--blue"), orange=cssv("--orange");
+  ctx.lineWidth = Math.max(1.5, Math.min(6, sc/6)); ctx.lineCap="round"; ctx.lineJoin="round";
+  for (let k=0;k<n;k++){ const pos=segIdx[k];
+    ctx.strokeStyle = obj.split ? (pos < obj.split[0] ? blue : orange) : blue;
+    ctx.beginPath(); ctx.moveTo(ox+pts[k][0]*sc, oy+pts[k][1]*sc); ctx.lineTo(ox+pts[k+1][0]*sc, oy+pts[k+1][1]*sc); ctx.stroke(); }
+  if (obj.split){ // punto de giro de la L central
+    const k = segIdx.findIndex(p=>p>obj.split[0]); const p = pts[k>=0?k:pts.length-1];
+    ctx.fillStyle="#E0B400"; ctx.beginPath(); ctx.arc(ox+p[0]*sc, oy+p[1]*sc, Math.max(4,Math.min(9,sc/4)), 0, 7); ctx.fill(); }
+  ctx.fillStyle=cssv("--ink"); ctx.beginPath(); ctx.arc(ox, oy, 4, 0, 7); ctx.fill();
+  return pts.length-1;
+}
+$("anim2").onclick = ()=>{ if (animId) cancelAnimationFrame(animId);
+  const total = drawCurve(curCadena2, true); let k=0; const stepN = Math.max(1, Math.ceil(total/120));
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches; if (reduce) return;
+  const tick=()=>{ k=Math.min(total,k+stepN); drawCurve(curCadena2,false,k); if(k<total) animId=requestAnimationFrame(()=>setTimeout(tick,40)); }; tick(); };
+steppers.ej2 = makeStepper({build:build2, show:show2, p:"p2", n:"n2", r:"r2", c:"c2"});
+sel2.onchange = ()=>steppers.ej2.reset();
+steppers.ej2.reset();
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", ()=>drawCurve(curCadena2,true));
+
+
+// =================== VIDEO DE PAPEL ===================
+(function(){
+  const cv=$("pcv"), ctx=cv.getContext("2d");
+  let N=3, signs=[], levels=[], stages=[], total=0, t=0, playing=false, last=0;
+  const tz = i => { let c=0; while(i%2===0){ i/=2; c++; } return c; };
+  function setup(){
+    N=+$("pord").value; let c="F"; for(let k=0;k<N;k++) c=c+"L"+invert(c);
+    const turns=c.replace(/F/g,"").split("");
+    signs=turns.map(x=>x==="L"?1:-1); levels=turns.map((x,k)=>N-tz(k+1));
+    stages=[{d:1.6,cap:"Tira recta. El punto marca el inicio.",st:0}];
+    const ord=["primera","segunda","tercera","cuarta"];
+    for(let k=1;k<=N;k++) stages.push({d:1.8,fold:k,cap:`Doblez ${k}: ${k===1?"por la mitad, el extremo derecho sobre el izquierdo":"otra vez por la mitad, hacia el mismo lado"}.`,st:Math.min(k,3)});
+    stages.push({d:2.2,cap:`Paquete de ${2**N} capas (cuanto más oscuro, más capas). Nos acercamos para verlo mejor.`,st:Math.min(N,3)});
+    for(let k=N;k>=1;k--) stages.push({d:1.8,open:k,cap:k===1?"Por último se abre el pliegue del centro: la L del medio.":`Abrimos a 90° los pliegues del doblez ${k}.`,st:4});
+    stages.push({d:2.5,end:true,cap:`¡Curva de orden ${N}! ${2**N} tramos y ${2**N-1} pliegues: ${turns.join(" ")}`,st:5});
+    total=stages.reduce((a,s)=>a+s.d,0);
+    const rev = turns.slice().reverse().map(x=>x==="L"?"R":"L").join(" ");
+    $("prev2").textContent = rev;
+    $("presult").innerHTML = `Aparece la curva: <b>${2**N} tramos rectos</b> (las ${2**N} F) y <b>${2**N-1} pliegues</b>. Recorriéndola desde el punto, los giros salen <b class="mono">${turns.join(" ")}</b>, exactamente las letras de <span class="mono">${c.length>40?c.slice(0,40)+"…":c}</span> si quitas las F.`;
+    computeBounds(); t=0; render();
+  }
+  const ease = x => x<0?0:x>1?1:0.5-0.5*Math.cos(Math.PI*x);
+  function angles(time){ // ángulo (grados) de cada nivel
+    const A={}; for(let k=1;k<=N;k++) A[k]=0;
+    let acc=0;
+    for(const s of stages){ const p=ease((time-acc)/s.d);
+      if(s.fold && time>acc) A[s.fold]=180*p;
+      if(s.open && time>acc) A[s.open]=180-90*p;
+      acc+=s.d; }
+    return A; }
+  function stageAt(time){ let acc=0; for(let i=0;i<stages.length;i++){ acc+=stages[i].d; if(time<acc) return i; } return stages.length-1; }
+  function points(time){ const A=angles(time); let x=0,y=0,h=0; const P=[[0,0]];
+    for(let i=0;i<2**N;i++){ x+=Math.cos(h); y-=Math.sin(h); P.push([x,y]); if(i<signs.length) h+=signs[i]*A[levels[i]]*Math.PI/180; }
+    return P; }
+  function bbox(t0,t1){ let mnx=1e9,mxx=-1e9,mny=1e9,mxy=-1e9; for(let k=0;k<=120;k++){ const P=points(t0+(t1-t0)*k/120); P.forEach(([x,y])=>{mnx=Math.min(mnx,x);mxx=Math.max(mxx,x);mny=Math.min(mny,y);mxy=Math.max(mxy,y);}); }
+    const cx=(mnx+mxx)/2, cy=(mny+mxy)/2, w=Math.max(mxx-mnx,2), h=Math.max(mxy-mny,2); return {mnx:cx-w/2,mxx:cx+w/2,mny:cy-h/2,mxy:cy+h/2}; }
+  let BF=null, BO=null, tPack=0, tOpen=0;
+  function computeBounds(){ const pi=stages.findIndex(s=>s.open)-1; tPack=stageStart(pi); tOpen=stageStart(pi+1);
+    BF=bbox(0,tPack); BO=bbox(tOpen,total); }
+  function cam(){ const p=ease((t-tPack)/(tOpen-tPack)); const L=(a,b)=>a+(b-a)*p; return {mnx:L(BF.mnx,BO.mnx),mxx:L(BF.mxx,BO.mxx),mny:L(BF.mny,BO.mny),mxy:L(BF.mxy,BO.mxy)}; }
+  function render(){
+    const B=cam(); const W=cv.width,H=cv.height,pad=34; const sc=Math.min((W-2*pad)/(B.mxx-B.mnx||1),(H-2*pad)/(B.mxy-B.mny||1));
+    const ox=pad+((W-2*pad)-sc*(B.mxx-B.mnx))/2-sc*B.mnx, oy=pad+((H-2*pad)-sc*(B.mxy-B.mny))/2-sc*B.mny;
+    ctx.clearRect(0,0,W,H);
+    const P=points(t), si=stageAt(t), st=stages[si];
+    ctx.lineCap="butt"; ctx.lineJoin="round"; ctx.lineWidth=Math.max(8,Math.min(18,sc*0.28));
+    const blue=cssv("--blue"); ctx.strokeStyle=blue; ctx.globalAlpha=0.38;
+    for(let i=0;i<P.length-1;i++){ ctx.beginPath(); ctx.moveTo(ox+P[i][0]*sc,oy+P[i][1]*sc); ctx.lineTo(ox+P[i+1][0]*sc,oy+P[i+1][1]*sc); ctx.stroke(); }
+    ctx.globalAlpha=1;
+    // pliegues
+    const showLbl = st.end;
+    for(let i=1;i<P.length-1;i++){ const lv=levels[i-1]; const X=ox+P[i][0]*sc, Y=oy+P[i][1]*sc;
+      if(lv===1 && si>=1){ ctx.fillStyle="#E0B400"; ctx.beginPath(); ctx.arc(X,Y,7,0,7); ctx.fill(); }
+      if(showLbl){ ctx.fillStyle=cssv("--ink"); ctx.font="bold 15px Segoe UI, system-ui, sans-serif"; ctx.textAlign="center"; ctx.fillText(signs[i-1]>0?"L":"R", X+10, Y-10); } }
+    // punto de inicio
+    ctx.fillStyle=cssv("--bad"); ctx.beginPath(); ctx.arc(ox+P[0][0]*sc,oy+P[0][1]*sc,7,0,7); ctx.fill();
+    $("pcap").textContent=st.cap;
+    document.querySelectorAll("#psteps li").forEach(li=>li.classList.toggle("on", +li.dataset.st===st.st));
+    $("pbar").value=Math.round(1000*t/total);
+  }
+  function loop(ts){ if(!playing) return; if(!last) last=ts; t=Math.min(total,t+(ts-last)/1000); last=ts; render(); if(t>=total){ playing=false; $("pplay").textContent="▶ Reproducir"; return; } requestAnimationFrame(loop); }
+  $("pplay").onclick=()=>{ if(playing){ playing=false; $("pplay").textContent="▶ Reproducir"; return; }
+    if(t>=total) t=0; if(matchMedia("(prefers-reduced-motion: reduce)").matches){ goStage(stageAt(t)+1); return; }
+    playing=true; last=0; $("pplay").textContent="⏸ Pausa"; requestAnimationFrame(loop); };
+  function stageStart(i){ let acc=0; for(let k=0;k<i;k++) acc+=stages[k].d; return acc; }
+  function goStage(i){ playing=false; $("pplay").textContent="▶ Reproducir"; i=Math.max(0,Math.min(stages.length-1,i)); t=stageStart(i)+stages[i].d-0.0001; if(i===0) t=0; render(); }
+  $("pnext").onclick=()=>goStage(stageAt(t)+ (t===0?1:1));
+  $("pprev").onclick=()=>goStage(stageAt(t)-1);
+  $("preset").onclick=()=>{ playing=false; $("pplay").textContent="▶ Reproducir"; t=0; render(); };
+  $("pbar").oninput=e=>{ playing=false; $("pplay").textContent="▶ Reproducir"; t=total*e.target.value/1000; render(); };
+  $("pord").onchange=()=>{ playing=false; $("pplay").textContent="▶ Reproducir"; setup(); };
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", render);
+  setup();
+})();
+
+// =================== EJ 1 ===================
+const code1 = [
+"static final double PRECISION = 1E-15;",
+"",
+"public static double coseno(double x) {",
+"    double suma = 0.0;",
+"    double termino = 1.0;          // n = 0: vale 1",
+"    int n = 0;",
+"    while (Math.abs(termino) >= PRECISION) {",
+"        suma = suma + termino;",
+"        n++;",
+"        termino = -termino * x * x / ((2*n - 1) * (2*n));",
+"    }",
+"    return suma;",
+"}",
+"",
+"// en el main:",
+"double x = sc.nextDouble();",
+"System.out.println(\"cos(\" + x + \") = \" + coseno(x));",
+"System.out.println(\"Calculado con Math.cos(\" + x + \") = \" + Math.cos(x));"];
+renderCode($("code1"), code1);
+function build1(){
+  let x = parseFloat($("x1").value); if (isNaN(x)) x = 1; const eps = parseFloat($("eps1").value); const epsS = $("eps1").selectedOptions[0].textContent;
+  const S=[]; let suma=0, t=1, n=0; const rows=[];
+  const base = ()=>({x:jfmt(x), n, termino:jfmt(t), suma:jfmt(suma)});
+  S.push({line:15, msg:`Leemos x = ${jfmt(x)} (en radianes) y llamamos a coseno(x).`, vars:{x:jfmt(x)}, rows:[], out:"", form:"cos x = 1 − x²/2! + x⁴/4! − x⁶/6! + …"});
+  S.push({line:4, msg:"Preparamos: suma = 0, el primer término (n = 0) vale 1.", vars:base(), rows:[], out:"", form:"t₀ = x⁰ / 0! = 1"});
+  let guard=0;
+  while (guard++<80){
+    const ok = Math.abs(t) >= eps;
+    if (!ok){ rows.push({n, t, suma, stop:true});
+      S.push({line:6, msg:`|término| = ${short(Math.abs(t))} es MENOR que ${epsS}: ya no aporta nada. Salimos SIN sumarlo.`, vars:base(), rows:rows.map(r=>({...r})), cur:rows.length-1, out:"", form:`|${short(t)}| < ${epsS}  →  parar`}); break; }
+    S.push({line:6, msg:`¿|término| ≥ precisión? |${short(t)}| ≥ ${epsS}: sí, este término todavía cuenta.`, vars:base(), rows:rows.map(r=>({...r})), out:"", form:`|${short(t)}| ≥ ${epsS}`});
+    suma = suma + t; rows.push({n, t, suma});
+    S.push({line:7, msg:`Sumamos el término: suma = ${short(suma)}.`, vars:base(), rows:rows.map(r=>({...r})), cur:rows.length-1, out:"", form:`suma = suma + (${short(t)}) = ${short(suma)}`});
+    const prev = t; n++; t = -t*x*x/((2*n-1)*(2*n));
+    S.push({line:9, msg:`n = ${n}. Calculamos el siguiente término a partir del anterior: se multiplica por −x² / (${2*n-1}·${2*n}).`, vars:base(), rows:rows.map(r=>({...r})), cur:rows.length-1, out:"", form:`t${sub(n)} = −(${short(prev)}) · ${jfmt(x)}² / (${2*n-1}·${2*n}) = ${short(t)}`});
+  }
+  const out = `cos(${jfmt(x)}) = ${jfmt(suma)}\nCalculado con Math.cos(${jfmt(x)}) = ${jfmt(Math.cos(x))}`;
+  S.push({line:11, msg:`La función devuelve suma = ${jfmt(suma)} al main.`, vars:base(), rows:rows.map(r=>({...r})), cur:rows.length-1, out:"", form:`return ${jfmt(suma)}`});
+  const diff = Math.abs(suma-Math.cos(x));
+  S.push({line:17, msg: diff===0 ? "¡Coincide exactamente con Math.cos!" : `Coincide con Math.cos salvo en las últimas cifras (diferencia ${short(diff)}): los double son aproximaciones.`, vars:base(), rows:rows.map(r=>({...r})), cur:rows.length-1, out, form:`Math.cos(${jfmt(x)}) = ${jfmt(Math.cos(x))}`});
+  S.x=x; return S;
+}
+const sub = n => String(n).split("").map(d=>"₀₁₂₃₄₅₆₇₈₉"[d]).join("");
+function show1(S,i){ const s=S[i];
+  $("e1").textContent = s.msg; hlCode($("code1"), s.line); renderVars($("vars1"), s.vars, i>0?S[i-1].vars:null);
+  $("out1").textContent = s.out; $("form1").textContent = s.form;
+  let h = "<tr><th>n</th><th>término</th><th>suma acumulada</th></tr>";
+  s.rows.forEach((r,k)=>{ h += `<tr class="${r.stop?"stop":k===s.cur?"cur":""}"><td>${r.n}</td><td>${short(r.t)}</td><td>${r.stop?"no se suma":jfmt(r.suma)}</td></tr>`; });
+  $("tab1").innerHTML = h; const tw=$("tab1").parentElement; tw.scrollTop = tw.scrollHeight;
+  drawChart(s.rows.filter(r=>!r.stop), S.x);
+}
+function drawChart(rows, x){ const svg=$("svg1"); const W=600,H=220,pl=50,pr=14,pt=14,pb=28; const target=Math.cos(x);
+  const vals = rows.map(r=>r.suma).concat([target, 1]); let lo=Math.min(...vals), hi=Math.max(...vals); if (hi-lo<1e-9){hi+=0.5;lo-=0.5;}
+  const pad=(hi-lo)*0.1; lo-=pad; hi+=pad; const N=Math.max(rows.length,6);
+  const X = k => pl + (W-pl-pr)*k/(N-1), Y = v => pt + (H-pt-pb)*(hi-v)/(hi-lo);
+  let g = `<line x1="${pl}" y1="${H-pb}" x2="${W-pr}" y2="${H-pb}" stroke="var(--line)"/><line x1="${pl}" y1="${pt}" x2="${pl}" y2="${H-pb}" stroke="var(--line)"/>`;
+  g += `<line x1="${pl}" x2="${W-pr}" y1="${Y(target)}" y2="${Y(target)}" stroke="var(--ok)" stroke-dasharray="6 5" stroke-width="2"/>`;
+  g += `<text x="${W-pr}" y="${Y(target)-6}" text-anchor="end" font-size="13" fill="var(--ok)">Math.cos(x) = ${target.toFixed(6)}</text>`;
+  if (rows.length){ g += `<polyline fill="none" stroke="var(--blue)" stroke-width="2.5" points="${rows.map((r,k)=>X(k)+","+Y(r.suma)).join(" ")}"/>`;
+    rows.forEach((r,k)=>{ g += `<circle cx="${X(k)}" cy="${Y(r.suma)}" r="4.5" fill="var(--blue)"/>`; }); }
+  for (let k=0;k<N;k++) g += `<text x="${X(k)}" y="${H-8}" text-anchor="middle" font-size="12" fill="var(--soft)">${k}</text>`;
+  g += `<text x="${pl-8}" y="${Y(hi-pad)+4}" text-anchor="end" font-size="12" fill="var(--soft)">${(hi-pad).toFixed(2)}</text><text x="${pl-8}" y="${Y(lo+pad)+4}" text-anchor="end" font-size="12" fill="var(--soft)">${(lo+pad).toFixed(2)}</text>`;
+  svg.innerHTML = g; }
+// tabla del factorial con desbordamiento de long (64 bits con signo)
+(function(){ let f=1n, h="<tr><th>n</th><th>n! en un long de Java</th></tr>";
+  const wrap = v => { v = BigInt.asIntN(64, v); return v; };
+  for (let n=1n;n<=25n;n++){ f = wrap(f*n); if (n>=15n){ const bad = n>=21n; h += `<tr class="${bad?"stop":""}"><td>${n}</td><td>${f}${bad?"  ← se desborda":""}</td></tr>`; } }
+  $("fact1").innerHTML = h; })();
+steppers.ej1 = makeStepper({build:build1, show:show1, p:"p1", n:"n1", r:"r1", c:"c1"});
+$("end1").onclick = ()=>steppers.ej1.end();
+$("x1").onchange = ()=>steppers.ej1.reset(); $("eps1").onchange = ()=>steppers.ej1.reset();
+steppers.ej1.reset();
+</script>
+</body>
+</html>
